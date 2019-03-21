@@ -1,0 +1,10 @@
+
+[package]
+name = "engine"
+version = "0.1.1"
+authors = ["Dynisious <daniel.bechaz@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+vector = { version = "0.1.*", git = "http://github.com/Dynisious/engine" }
+fixed-point = { version = "0.1.*", git = "http://github.com/Dynisious/engine" }
