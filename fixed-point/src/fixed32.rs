@@ -58,6 +58,13 @@ impl<Shift: Unsigned,> Clone for Fixed32<Shift,> {
 
 impl<Shift: Unsigned,> Copy for Fixed32<Shift,> {}
 
+impl<Shift: Unsigned,> ops::Neg for Fixed32<Shift,> {
+  type Output = Self;
+
+  #[inline]
+  fn neg(mut self,) -> Self::Output { self.0 = -self.0; self }
+}
+
 impl<Shift: Unsigned,> ops::Add for Fixed32<Shift,> {
   type Output = Self;
 
