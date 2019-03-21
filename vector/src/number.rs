@@ -49,6 +49,8 @@ pub trait Trigonometry: Number {
   fn acos(self,) -> Self;
   /// The inverse tangent of this number.
   fn atan(self,) -> Self;
+  /// Creates a new number from a `usize`.
+  fn from_usize(from: usize,) -> Self;
 }
 
 impl Trigonometry for f32 {
@@ -64,6 +66,8 @@ impl Trigonometry for f32 {
   fn acos(self,) -> Self { f32::acos(self,) }
   #[inline]
   fn atan(self,) -> Self { f32::atan(self,) }
+  #[inline]
+  fn from_usize(from: usize,) -> Self { from as f32 }
 }
 
 impl Trigonometry for f64 {
@@ -79,4 +83,6 @@ impl Trigonometry for f64 {
   fn acos(self,) -> Self { f64::acos(self,) }
   #[inline]
   fn atan(self,) -> Self { f64::atan(self,) }
+  #[inline]
+  fn from_usize(from: usize,) -> Self { from as f64 }
 }

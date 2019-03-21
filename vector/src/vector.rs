@@ -28,7 +28,7 @@ impl<Num: Number,> Vector<Num,> {
 }
 
 impl<Num,> Vector<Num,>
-  where Num: Number + Sqrt + Trigonometry + Clone + From<f32>, {
+  where Num: Number + Sqrt + Trigonometry + Clone, {
   /// Rotates this Vector.
   /// 
   /// # Params
@@ -54,7 +54,7 @@ impl<Num,> Vector<Num,>
     y dim is j
     z dim is k
     */
-    let angle = rotation.angle.clone() / 2.0.into();
+    let angle = rotation.angle.clone() / Num::from_usize(2,);
     let a = angle.clone().sin();
     let mut bcd = rotation.axis.clone().vector() * angle.cos();
     let temp = Vector::new(
