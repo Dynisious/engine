@@ -25,7 +25,7 @@ impl<Num: Number,> Rotation<Num,> {
   /// 
   /// from --- The [Vector] to find the [Rotation] from.  
   /// to --- The [Vector] to rotate `from` into.  
-  pub fn find_rotation(from: Vector<Num,>, to: Vector<Num,>,) -> Self
+  pub fn between(from: Vector<Num,>, to: Vector<Num,>,) -> Self
     where Num: Sqrt + Clone + Into<f32>, {
     let dot = from.clone() * to.clone();
     //Using the square of the dot means we can use the square of the magnituids while
@@ -52,15 +52,15 @@ mod tests {
 
     const PI2: f32 = std::f32::consts::FRAC_PI_2;
 
-    let rot = Rotation::find_rotation(x, y,);
+    let rot = Rotation::between(x, y,);
     assert_eq!(rot.axis, z, "Rotation axis is wrong",);
     assert_eq!(rot.angle, PI2, "Rotation angle is wrong",);
 
-    let rot = Rotation::find_rotation(y, z,);
+    let rot = Rotation::between(y, z,);
     assert_eq!(rot.axis, x, "Rotation axis is wrong",);
     assert_eq!(rot.angle, PI2, "Rotation angle is wrong",);
 
-    let rot = Rotation::find_rotation(z, x,);
+    let rot = Rotation::between(z, x,);
     assert_eq!(rot.axis, y, "Rotation axis is wrong",);
     assert_eq!(rot.angle, PI2, "Rotation angle is wrong",);
   }
