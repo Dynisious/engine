@@ -32,3 +32,49 @@ impl Sqrt for f64 {
   #[inline]
   fn sqrt(self,) -> Self { f64::sqrt(self,) }
 }
+
+/// Defines trigonometry operations for a [Number] type.
+pub trait Trigonometry: Number {
+  /// The sine of this [Number].
+  fn sin(self,) -> Self;
+  /// The cosine of this [Number].
+  fn cos(self,) -> Self;
+  /// The tangent of this [Number].
+  fn tan(self,) -> Self;
+  /// The inverse sine of this [Number].
+  fn asin(self,) -> Self;
+  /// The inverse cosine of this [Number].
+  fn acos(self,) -> Self;
+  /// The inverse tangent of this [Number].
+  fn atan(self,) -> Self;
+}
+
+impl Trigonometry for f32 {
+  #[inline]
+  fn sin(self,) -> Self { f32::sin(self,) }
+  #[inline]
+  fn cos(self,) -> Self { f32::cos(self,) }
+  #[inline]
+  fn tan(self,) -> Self { f32::tan(self,) }
+  #[inline]
+  fn asin(self,) -> Self { f32::asin(self,) }
+  #[inline]
+  fn acos(self,) -> Self { f32::acos(self,) }
+  #[inline]
+  fn atan(self,) -> Self { f32::atan(self,) }
+}
+
+impl Trigonometry for f64 {
+  #[inline]
+  fn sin(self,) -> Self { f64::sin(self,) }
+  #[inline]
+  fn cos(self,) -> Self { f64::cos(self,) }
+  #[inline]
+  fn tan(self,) -> Self { f64::tan(self,) }
+  #[inline]
+  fn asin(self,) -> Self { f64::asin(self,) }
+  #[inline]
+  fn acos(self,) -> Self { f64::acos(self,) }
+  #[inline]
+  fn atan(self,) -> Self { f64::atan(self,) }
+}
