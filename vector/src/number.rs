@@ -54,6 +54,18 @@ impl Number for f64 {
   fn from_isize(from: isize,) -> Self { from as f64 }
 }
 
+#[cfg(features = "fixed-point",)]
+impl Number for fixed_point::Fixed32 {
+  #[inline]
+  fn from_isize(from: isize,) -> Self { from as f32 }
+}
+
+#[cfg(features = "fixed-point",)]
+impl Number for fixed_point::Fixed64 {
+  #[inline]
+  fn from_isize(from: isize,) -> Self { from as f32 }
+}
+
 /// Defines a square root operation for a number type.
 pub trait Sqrt: Number {
   /// Returns the square root of this number.
