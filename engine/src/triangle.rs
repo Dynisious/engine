@@ -1,5 +1,5 @@
 //! Author --- daniel.bechaz@gmail.com  
-//! Last Moddified --- 2019-03-21
+//! Last Moddified --- 2019-03-22
 
 use crate::transform::{Position, Orientation,};
 use vector::{Vector, Rotation, Number, Sqrt, Trigonometry,};

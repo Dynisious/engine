@@ -7,4 +7,4 @@ edition = "2018"
 
 [dependencies]
 vector = { version = "0.2.3", git = "http://github.com/Dynisious/engine" }
-fixed-point = { versio = "0.1.1", git = "http://github.com/Dynisious/engine" }
+fixed-point = { versio = "0.1.2", git = "http://github.com/Dynisious/engine", optional = true }
