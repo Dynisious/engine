@@ -5,17 +5,21 @@ use crate::*;
 
 /// A rotation in 3D space.
 #[derive(Clone, Copy, Debug,)]
-pub struct Rotation {
+pub struct Rotation<Num,> {
   /// The axis around which the rotation occours.
-  pub axis: Unit<f32,>,
+  pub axis: Unit<Num,>,
   /// The angle of the rotation.
-  pub angle: f32,
+  pub angle: Num,
 }
 
-impl Rotation {
+impl<Num,> Rotation<Num,> {
   /// Creates a new [Rotation] value.
   #[inline]
-  pub const fn new(axis: Unit<f32,>, angle: f32,) -> Self { Self { axis, angle, } }
+  pub const fn new(axis: Unit<Num,>, angle: Num,) -> Self { Self { axis, angle, } }
+}
+
+impl<Num,> Rotation<Num,>
+  where Num: Trigonometry + Sqrt + Clone, {
   /// Finds the rotation to go from `from` to `to`.
   /// 
   /// Differences in the length of the [Vector]s have no affect on the [Rotation] returned.
@@ -24,7 +28,7 @@ impl Rotation {
   /// 
   /// from --- The [Vector] to find the [Rotation] from.  
   /// to --- The [Vector] to rotate `from` into.  
-  pub fn between(from: Vector<f32,>, to: Vector<f32,>,) -> Self {
+  pub fn between(from: Vector<Num,>, to: Vector<Num,>,) -> Self {
     let dot = from.clone() * to.clone();
     //Using the square of the dot means we can use the square of the magnituids while
     //calculating the angle.

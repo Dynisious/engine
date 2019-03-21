@@ -6,7 +6,7 @@ use std::{ops, cmp::Ordering,};
 
 /// A 3D Vector.
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash,)]
-pub struct Vector<Num: Number,> {
+pub struct Vector<Num,> {
   /// The coordinate in the x dimention.
   pub x: Num,
   /// The coordinate in the y dimention.
@@ -15,22 +15,26 @@ pub struct Vector<Num: Number,> {
   pub z: Num,
 }
 
-impl<Num: Number,> Vector<Num,> {
+impl<Num,> Vector<Num,> {
   /// Builds a new Vector value.
   #[inline]
   pub const fn new(x: Num, y: Num, z: Num,) -> Self { Self { x, y, z } }
+}
+
+impl<Num: Number,> Vector<Num,> {
   /// Returns the dot product of two Vectors.
   #[inline]
   pub fn dot(lhs: Self, rhs: Self,) -> Num { lhs * rhs }
 }
 
-impl Vector<f32,> {
+impl<Num,> Vector<Num,>
+  where Num: Number + Sqrt + Trigonometry + Clone + From<f32>, {
   /// Rotates this Vector.
   /// 
   /// # Params
   /// 
   /// rotation --- The rotation to apply.  
-  pub fn rotate(&self, rotation: &Rotation,) -> Self {
+  pub fn rotate(&self, rotation: &Rotation<Num,>,) -> Self {
     /*
     Quaternion Identities:
     ijk = -1
@@ -50,28 +54,36 @@ impl Vector<f32,> {
     y dim is j
     z dim is k
     */
-    let angle = rotation.angle / 2.0;
-    let a = angle.sin();
-    let mut bcd = rotation.axis.vector() * angle.cos();
+    let angle = rotation.angle.clone() / 2.0.into();
+    let a = angle.clone().sin();
+    let mut bcd = rotation.axis.clone().vector() * angle.cos();
     let temp = Vector::new(
-      (a * self.x) + (bcd.y * self.z) - (bcd.z * self.y),
-      (a * self.y) + (bcd.z * self.x) - (bcd.x * self.z),
-      (a * self.z) + (bcd.x * self.y) - (bcd.y * self.x),
+      (a.clone() * self.x.clone()) + (bcd.y.clone() * self.z.clone())
+        - (bcd.z.clone() * self.y.clone()),
+      (a.clone() * self.y.clone()) + (bcd.z.clone() * self.x.clone())
+        - (bcd.x.clone() * self.z.clone()),
+      (a.clone() * self.z.clone()) + (bcd.x.clone() * self.y.clone())
+        - (bcd.y.clone() * self.x.clone()),
     );
-    let w = -(bcd.x * self.x) - (bcd.y * self.y) - (bcd.z * self.z);
+    let w = -(bcd.x.clone() * self.x.clone())
+      - (bcd.y.clone() * self.y.clone())
+      - (bcd.z.clone() * self.z.clone());
 
     //Negate as the inversion of the quaternion.
     bcd = -bcd;
     
     Vector::new(
-      (w * bcd.x) + (a * temp.x) + (temp.y * bcd.z) - (temp.z * bcd.y),
-      (w * bcd.y) + (a * temp.y) + (temp.z * bcd.x) - (temp.x * bcd.z),
+      (w.clone() * bcd.x.clone()) + (a.clone() * temp.x.clone())
+        + (temp.y.clone() * bcd.z.clone()) - (temp.z.clone() * bcd.y.clone()),
+      (w.clone() * bcd.y.clone()) + (a.clone() * temp.y.clone())
+        + (temp.z.clone() * bcd.x.clone()) - (temp.x.clone() * bcd.z.clone()),
       (w * bcd.z) + (a * temp.z) + (temp.x * bcd.y) - (temp.y * bcd.x),
     )
   }
 }
 
-impl<Num: Number + Clone,> Vector<Num,> {
+impl<Num,> Vector<Num,>
+  where Num: Clone + ops::Mul<Output = Num> + ops::Sub<Output = Num>, {
   /// Returns the dot product of two Vectors.
   pub fn cross(lhs: Self, rhs: Self,) -> Self {
     let x = (lhs.y.clone() * rhs.z.clone()) - (lhs.z.clone() * rhs.y.clone());
@@ -82,7 +94,8 @@ impl<Num: Number + Clone,> Vector<Num,> {
   }
 }
 
-impl<Num: Sqrt + Clone,> Vector<Num,> {
+impl<Num,> Vector<Num,>
+  where Num: Sqrt + Clone, {
   /// Returns the magnituid of this Vector.
   #[inline]
   pub fn magnituid(self,) -> Num { Self::dot(self.clone(), self,).sqrt() }
@@ -91,7 +104,7 @@ impl<Num: Sqrt + Clone,> Vector<Num,> {
   pub fn unit(self,) -> Unit<Num,> { self.into() }
 }
 
-impl<Num: Number + Default,> Vector<Num,> {
+impl<Num: Default,> Vector<Num,> {
   /// Returns a Vector populated with the default value of `Num`.
   pub fn origin() -> Self { Self::new(
     Num::default(),
@@ -100,12 +113,21 @@ impl<Num: Number + Default,> Vector<Num,> {
   ) }
 }
 
-impl<Num: Number,> From<(Num, Num, Num,)> for Vector<Num,> {
+impl<Num,> From<(Num, Num, Num,)> for Vector<Num,> {
   #[inline]
   fn from((x, y, z,): (Num, Num, Num,),) -> Self { Self { x, y, z, } }
 }
 
-impl<Num: Number + Clone,> ops::Neg for Vector<Num,> {
+impl<Num: PartialOrd,> PartialOrd for Vector<Num,> {
+  fn partial_cmp(&self, rhs: &Self,) -> Option<Ordering> {
+    self.x.partial_cmp(&rhs.x,)
+    .and_then(|lhs,| self.y.partial_cmp(&rhs.y,).filter(move |rhs,| lhs == *rhs,),)
+    .and_then(|lhs,| self.z.partial_cmp(&rhs.z,).filter(move |rhs,| lhs == *rhs,),)
+  }
+}
+
+impl<Num,> ops::Neg for Vector<Num,>
+  where Num: Clone + ops::Neg<Output = Num>, {
   type Output = Self;
   
   fn neg(mut self,) -> Self {
@@ -117,22 +139,16 @@ impl<Num: Number + Clone,> ops::Neg for Vector<Num,> {
   }
 }
 
-impl<Num: Number + Clone,> ops::Add for Vector<Num,> {
+impl<Num,> ops::Add for Vector<Num,>
+  where Num: Clone + ops::Add<Output = Num>, {
   type Output = Self;
 
   #[inline]
   fn add(mut self, rhs: Self,) -> Self::Output { self += rhs; self }
 }
 
-impl<Num: Number + PartialOrd,> PartialOrd for Vector<Num,> {
-  fn partial_cmp(&self, rhs: &Self,) -> Option<Ordering> {
-    self.x.partial_cmp(&rhs.x,)
-    .and_then(|lhs,| self.y.partial_cmp(&rhs.y,).filter(move |rhs,| lhs == *rhs,),)
-    .and_then(|lhs,| self.z.partial_cmp(&rhs.z,).filter(move |rhs,| lhs == *rhs,),)
-  }
-}
-
-impl<Num: Number + Clone,> ops::AddAssign for Vector<Num,> {
+impl<Num,> ops::AddAssign for Vector<Num,>
+  where Num: Clone + ops::Add<Output = Num>, {
   #[inline]
   fn add_assign(&mut self, rhs: Self,) {
     self.x = self.x.clone() + rhs.x;
@@ -141,14 +157,16 @@ impl<Num: Number + Clone,> ops::AddAssign for Vector<Num,> {
   }
 }
 
-impl<Num: Number + Clone,> ops::Sub for Vector<Num,> {
+impl<Num,> ops::Sub for Vector<Num,>
+  where Num: Clone + ops::Sub<Output = Num>, {
   type Output = Self;
 
   #[inline]
   fn sub(mut self, rhs: Self,) -> Self::Output { self -= rhs; self }
 }
 
-impl<Num: Number + Clone,> ops::SubAssign for Vector<Num,> {
+impl<Num,> ops::SubAssign for Vector<Num,>
+  where Num: Clone + ops::Sub<Output = Num>, {
   fn sub_assign(&mut self, rhs: Self,) {
     self.x = self.x.clone() - rhs.x;
     self.y = self.y.clone() - rhs.y;
@@ -156,14 +174,16 @@ impl<Num: Number + Clone,> ops::SubAssign for Vector<Num,> {
   }
 }
 
-impl<Num: Number + Clone,> ops::Mul<Num> for Vector<Num,> {
+impl<Num,> ops::Mul<Num> for Vector<Num,>
+  where Num: Clone + ops::Mul<Output = Num>, {
   type Output = Self;
 
   #[inline]
   fn mul(mut self, rhs: Num,) -> Self::Output { self *= rhs; self }
 }
 
-impl<Num: Number + Clone,> ops::MulAssign<Num> for Vector<Num,> {
+impl<Num,> ops::MulAssign<Num> for Vector<Num,>
+  where Num: Clone + ops::Mul<Output = Num>, {
   fn mul_assign(&mut self, rhs: Num,) {
     self.x = self.x.clone() * rhs.clone();
     self.y = self.y.clone() * rhs.clone();
@@ -171,14 +191,15 @@ impl<Num: Number + Clone,> ops::MulAssign<Num> for Vector<Num,> {
   }
 }
 
-impl<Num: Number + Clone,> ops::Div<Num> for Vector<Num,> {
+impl<Num,> ops::Div<Num> for Vector<Num,>
+  where Num: Clone + ops::Div<Output = Num>, {
   type Output = Self;
 
   #[inline]
   fn div(mut self, rhs: Num,) -> Self::Output { self /= rhs; self }
 }
 
-impl<Num: Number + Clone,> ops::DivAssign<Num> for Vector<Num,> {
+impl<Num: Clone + ops::Div<Output = Num>,> ops::DivAssign<Num> for Vector<Num,> {
   fn div_assign(&mut self, rhs: Num,) {
     self.x = self.x.clone() / rhs.clone();
     self.y = self.y.clone() / rhs.clone();
@@ -186,10 +207,10 @@ impl<Num: Number + Clone,> ops::DivAssign<Num> for Vector<Num,> {
   }
 }
 
-impl<Num: Number,> ops::Mul for Vector<Num,> {
+impl<Num> ops::Mul for Vector<Num,>
+  where Num: ops::Mul<Output = Num> + ops::Add<Output = Num>, {
   type Output = Num;
 
-  #[inline]
   fn mul(self, rhs: Self,) -> Self::Output {
     (self.x * rhs.x) + (self.y * rhs.y) + (self.z * rhs.z)
   }
@@ -197,9 +218,9 @@ impl<Num: Number,> ops::Mul for Vector<Num,> {
 
 /// A [Vector] with a length of 1 at all times.
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash,)]
-pub struct Unit<Num: Number>(Vector<Num,>,);
+pub struct Unit<Num>(Vector<Num,>,);
 
-impl<Num: Number> Unit<Num,> {
+impl<Num> Unit<Num,> {
   /// Converts this [Unit] into a [Vector].
   #[inline]
   pub fn vector(self,) -> Vector<Num,> { self.0 }
@@ -210,12 +231,12 @@ impl<Num: Sqrt + Clone,> From<Vector<Num,>> for Unit<Num,> {
   fn from(from: Vector<Num,>,) -> Self { Unit(from.clone() / from.magnituid(),) }
 }
 
-impl<Num: Number,> Into<Vector<Num,>> for Unit<Num,> {
+impl<Num,> Into<Vector<Num,>> for Unit<Num,> {
   #[inline]
   fn into(self,) -> Vector<Num,> { self.0 }
 }
 
-impl<Num: Number + PartialEq,> PartialEq<Vector<Num,>> for Unit<Num,> {
+impl<Num: PartialEq,> PartialEq<Vector<Num,>> for Unit<Num,> {
   #[inline]
   fn eq(&self, rhs: &Vector<Num,>,) -> bool { self.0 == *rhs }
 }
