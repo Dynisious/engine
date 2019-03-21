@@ -54,7 +54,7 @@ impl<Num,> Vector<Num,>
     y dim is j
     z dim is k
     */
-    let angle = rotation.angle.clone() / Num::from_usize(2,);
+    let angle = rotation.angle.clone() / Num::from_isize(2,);
     let a = angle.clone().sin();
     let mut bcd = rotation.axis.clone().vector() * angle.cos();
     let temp = Vector::new(
