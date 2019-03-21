@@ -1,10 +1,10 @@
 //! Defines traits for transformation of types.
 //! 
 //! Author --- daniel.bechaz@gmail.com  
-//! Last Moddified --- 2019-03-7
+//! Last Moddified --- 2019-03-21
 
-use vector::{Vector, Number, Sqrt,};
-use std::ops::Add;
+use vector::{Vector, Unit, Rotation, Number, Sqrt,};
+use std::ops;
 
 /// A trait for types with a position attribute.
 pub trait Position {
@@ -26,7 +26,7 @@ pub trait Position {
   /// trans --- The translation to the position.  
   #[inline]
   fn translate<Trans,>(&mut self, trans: Trans,) -> &mut Self
-    where Self::Pos: Add<Trans, Output = Self::Pos>, Trans: Clone, {
+    where Self::Pos: ops::Add<Trans, Output = Self::Pos>, Trans: Clone, {
     self.set_position(self.position() + trans,)
   }
 }
@@ -40,26 +40,32 @@ impl<Num: Number + Clone,> Position for Vector<Num,> {
   fn set_position(&mut self, pos: Self::Pos,) -> &mut Self { *self = pos; self }
 }
 
-#[derive(Clone, Copy,)]
-pub struct Rotation<Num: Number> {
-  pub axis: Vector<Num,>,
-  pub angle: f32,
-}
-
-pub trait Orientation<Num: Number,> {
+/// A trait for types with an orientation.
+pub trait Orientation<Num: Number + Clone,> {
+  /// Gets the direction this object is facing.
   fn direction(&self,) -> Vector<Num,>;
+  /// Sets the direction this object is facing.
   fn set_direction(&mut self, dir: Vector<Num,>,) -> &mut Self;
+  /// Rotates the direction this object is facing by the passed [Rotation].
+  /// 
+  /// # Params
+  /// 
+  /// rotation --- The rotation to perform.  
   #[inline]
-  fn rotate<Rot,>(&mut self, rotation: Rotation<Rot,>,) -> &mut Self
-    where Rot: Number, {
-    self.set_direction(self.direction().rotate(rotation,),)
+  fn rotate(&mut self, rotation: &Rotation,) -> &mut Self {
+    self.set_direction(Vector::rotate(&self.direction(), rotation,),)
   }
 }
 
-pub trait OrientationExt<Num: Sqrt,> {
+/// Extends [Orientation] behaviour.
+pub trait OrientationExt<Num: Sqrt + Clone,>: Orientation<Num,> {
+  /// Returns the [Unit] of this objects direction.
   #[inline]
-  fn orientation(&self,) -> Vector<Num,> { self.direction().unit() }
+  fn orientation(&self,) -> Unit<Num,> { self.direction().unit() }
 }
+
+impl<Num, T,> OrientationExt<Num,> for T
+  where Num: Sqrt + Clone, T: Orientation<Num,>, {}
 
 impl<Num: Number + Clone,> Orientation<Num,> for Vector<Num,> {
   #[inline]

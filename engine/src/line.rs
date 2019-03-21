@@ -1,7 +1,7 @@
 //! Author --- daniel.bechaz@gmail.com  
-//! Last Moddified --- 2019-03-7
+//! Last Moddified --- 2019-03-21
 
-use crate::transform::Position;
+use crate::transform::{Position, Orientation,};
 use vector::{Number, Vector,};
 
 /// A line in space.
@@ -21,5 +21,14 @@ impl<Num: Number + Clone,> Position for Line<Num,> {
   #[inline]
   fn set_position(&mut self, pos: Self::Pos,) -> &mut Self {
     self.location = pos; self
+  }
+}
+
+impl<Num: Number + Clone,> Orientation<Num,> for Line<Num,> {
+  #[inline]
+  fn direction(&self,) -> Vector<Num,> { self.direction.clone() }
+  #[inline]
+  fn set_direction(&mut self, direction: Vector<Num,>,) -> &mut Self {
+    self.direction = direction; self
   }
 }

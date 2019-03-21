@@ -22,13 +22,15 @@ impl<Num: Number,> Vector<Num,> {
   /// Returns the dot product of two Vectors.
   #[inline]
   pub fn dot(lhs: Self, rhs: Self,) -> Num { lhs * rhs }
+}
+
+impl Vector<f32,> {
   /// Rotates this Vector.
   /// 
   /// # Params
   /// 
   /// rotation --- The rotation to apply.  
-  pub fn rotate<Rot,>(&self, rotation: &Rotation<Rot,>,) -> Self
-    where Rot: Number + Clone, Num: ops::Mul<Rot, Output = Num>, {
+  pub fn rotate(&self, rotation: &Rotation,) -> Self {
     /*
     Quaternion Identities:
     ijk = -1
@@ -36,11 +38,36 @@ impl<Num: Number,> Vector<Num,> {
     jk = i, kj = -i
     ki = j, ik = -j
 
+    t = q.u
+      = (a + bi + cj + dk)(xi + yj + zk)
+      = i(ax + cz - dy) + j(ay + dx - bz) + k(ad + by - cx) - bx - cy - dz
+      = w + i(ax + cz - dy) + j(ay + dx - bz) + k(ad + by - cx)
+    v = t.q-1
+      = (w + xi + yj + zk)(a + bi + cj + dk)
+      = i(wb + ax + yd - zc) + j(wc + ay + zb - xd) + k(wd + az + xc - yb) + wa - xb - yc - zd
+
     x dim is i
     y dim is j
     z dim is k
     */
-    unimplemented!()
+    let angle = rotation.angle / 2.0;
+    let a = angle.sin();
+    let mut bcd = rotation.axis.vector() * angle.cos();
+    let temp = Vector::new(
+      (a * self.x) + (bcd.y * self.z) - (bcd.z * self.y),
+      (a * self.y) + (bcd.z * self.x) - (bcd.x * self.z),
+      (a * self.z) + (bcd.x * self.y) - (bcd.y * self.x),
+    );
+    let w = -(bcd.x * self.x) - (bcd.y * self.y) - (bcd.z * self.z);
+
+    //Negate as the inversion of the quaternion.
+    bcd = -bcd;
+    
+    Vector::new(
+      (w * bcd.x) + (a * temp.x) + (temp.y * bcd.z) - (temp.z * bcd.y),
+      (w * bcd.y) + (a * temp.y) + (temp.z * bcd.x) - (temp.x * bcd.z),
+      (w * bcd.z) + (a * temp.z) + (temp.x * bcd.y) - (temp.y * bcd.x),
+    )
   }
 }
 
@@ -78,6 +105,18 @@ impl<Num: Number,> From<(Num, Num, Num,)> for Vector<Num,> {
   fn from((x, y, z,): (Num, Num, Num,),) -> Self { Self { x, y, z, } }
 }
 
+impl<Num: Number + Clone,> ops::Neg for Vector<Num,> {
+  type Output = Self;
+  
+  fn neg(mut self,) -> Self {
+    self.x = -self.x.clone();
+    self.y = -self.y.clone();
+    self.z = -self.z.clone();
+
+    self
+  }
+}
+
 impl<Num: Number + Clone,> ops::Add for Vector<Num,> {
   type Output = Self;
 
@@ -110,7 +149,6 @@ impl<Num: Number + Clone,> ops::Sub for Vector<Num,> {
 }
 
 impl<Num: Number + Clone,> ops::SubAssign for Vector<Num,> {
-  #[inline]
   fn sub_assign(&mut self, rhs: Self,) {
     self.x = self.x.clone() - rhs.x;
     self.y = self.y.clone() - rhs.y;
@@ -126,7 +164,6 @@ impl<Num: Number + Clone,> ops::Mul<Num> for Vector<Num,> {
 }
 
 impl<Num: Number + Clone,> ops::MulAssign<Num> for Vector<Num,> {
-  #[inline]
   fn mul_assign(&mut self, rhs: Num,) {
     self.x = self.x.clone() * rhs.clone();
     self.y = self.y.clone() * rhs.clone();
@@ -142,7 +179,6 @@ impl<Num: Number + Clone,> ops::Div<Num> for Vector<Num,> {
 }
 
 impl<Num: Number + Clone,> ops::DivAssign<Num> for Vector<Num,> {
-  #[inline]
   fn div_assign(&mut self, rhs: Num,) {
     self.x = self.x.clone() / rhs.clone();
     self.y = self.y.clone() / rhs.clone();
@@ -162,6 +198,12 @@ impl<Num: Number,> ops::Mul for Vector<Num,> {
 /// A [Vector] with a length of 1 at all times.
 #[derive(PartialEq, Eq, Clone, Copy, Debug, Hash,)]
 pub struct Unit<Num: Number>(Vector<Num,>,);
+
+impl<Num: Number> Unit<Num,> {
+  /// Converts this [Unit] into a [Vector].
+  #[inline]
+  pub fn vector(self,) -> Vector<Num,> { self.0 }
+}
 
 impl<Num: Sqrt + Clone,> From<Vector<Num,>> for Unit<Num,> {
   #[inline]
@@ -200,15 +242,24 @@ mod tests {
 
     assert_eq!(Vector::cross(x, y,), z, "Cross product failed 1",);
     assert_eq!(Vector::cross(y, z,), x, "Cross product failed 2",);
-    assert_eq!(Vector::cross(z, x,), y, "Cross product failed 3",);
+    assert_eq!(Vector::cross(x, z,), y, "Cross product failed 3",);
 
     const PI2: f32 = std::f32::consts::FRAC_PI_2;
+    const EPSILON: f32 = std::f32::EPSILON;
 
     let rot = Rotation::new(z.into(), PI2,);
-    assert_eq!(x.rotate(&rot,), y, "Rotate failed 1",);
+    let vec = x.rotate(&rot,);
+    let diff = 1.0 - vec.y;
+    assert!(0.0 < diff && diff < EPSILON, "Rotate failed 1: {:?}", vec,);
+
     let rot = Rotation::new(x.into(), PI2,);
-    assert_eq!(y.rotate(&rot,), z, "Rotate failed 2",);
+    let vec = y.rotate(&rot,);
+    let diff = 1.0 - vec.z;
+    assert!(0.0 < diff && diff < EPSILON, "Rotate failed 2: {:?}", vec,);
+
     let rot = Rotation::new(y.into(), PI2,);
-    assert_eq!(z.rotate(&rot,), x, "Rotate failed 3",);
+    let vec = z.rotate(&rot,);
+    let diff = 1.0 - vec.x;
+    assert!(0.0 < diff && diff < EPSILON, "Rotate failed 3: {:?}", vec,);
   }
 }

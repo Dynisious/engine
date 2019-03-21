@@ -8,6 +8,7 @@ pub trait Number: ops::Add<Output = Self>
   + ops::Sub<Output = Self>
   + ops::Mul<Output = Self>
   + ops::Div<Output = Self>
+  + ops::Neg<Output = Self>
   + Sized {}
 
 impl<T,> Number for T
@@ -15,11 +16,12 @@ impl<T,> Number for T
   + ops::Sub<Output = Self>
   + ops::Mul<Output = Self>
   + ops::Div<Output = Self>
+  + ops::Neg<Output = Self>
   + Sized {}
 
-/// Defines a square root operation for a [Number] type.
+/// Defines a square root operation for a number type.
 pub trait Sqrt: Number {
-  /// Returns the square root of this [Number].
+  /// Returns the square root of this number.
   fn sqrt(self,) -> Self;
 }
 
@@ -33,19 +35,19 @@ impl Sqrt for f64 {
   fn sqrt(self,) -> Self { f64::sqrt(self,) }
 }
 
-/// Defines trigonometry operations for a [Number] type.
+/// Defines trigonometry operations for a number type.
 pub trait Trigonometry: Number {
-  /// The sine of this [Number].
+  /// The sine of this number.
   fn sin(self,) -> Self;
-  /// The cosine of this [Number].
+  /// The cosine of this number.
   fn cos(self,) -> Self;
-  /// The tangent of this [Number].
+  /// The tangent of this number.
   fn tan(self,) -> Self;
-  /// The inverse sine of this [Number].
+  /// The inverse sine of this number.
   fn asin(self,) -> Self;
-  /// The inverse cosine of this [Number].
+  /// The inverse cosine of this number.
   fn acos(self,) -> Self;
-  /// The inverse tangent of this [Number].
+  /// The inverse tangent of this number.
   fn atan(self,) -> Self;
 }
 
