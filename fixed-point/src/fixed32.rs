@@ -33,12 +33,22 @@ impl<Shift: Unsigned,> From<i32,> for Fixed32<Shift,> {
   fn from(from: i32,) -> Self { Fixed32(from * Self::I32SHIFT, PhantomData,) }
 }
 
+impl<Shift: Unsigned,> Into<i32,> for Fixed32<Shift,> {
+  #[inline]
+  fn into(self,) -> i32 { self.to_i32() }
+}
+
 impl<Shift: Unsigned,> From<f32,> for Fixed32<Shift,> {
   #[inline]
   fn from(from: f32,) -> Self { Fixed32(
     (from * Self::F32SHIFT).round() as i32,
     PhantomData,
   ) }
+}
+
+impl<Shift: Unsigned,> Into<f32,> for Fixed32<Shift,> {
+  #[inline]
+  fn into(self,) -> f32 { self.to_f32() }
 }
 
 impl<Shift: Unsigned,> Clone for Fixed32<Shift,> {

@@ -27,12 +27,32 @@ impl<Num: Number,> Vector<Num,> {
   /// Builds a new Vector value.
   #[inline]
   pub const fn new(x: Num, y: Num, z: Num,) -> Self { Self { x, y, z } }
+  /// Rotates this Vector.
+  /// 
+  /// # Params
+  /// 
+  /// rotation --- The rotation to apply.  
+  pub fn rotate<Rot,>(mut self, rotation: &Rotation<Rot,>,) -> Self
+    where Rot: Number + Clone, Num: ops::Mul<Rot, Output = Num>, {
+    /*
+    Quaternion Identities:
+    ijk = -1
+    ij = k, ji = -k
+    jk = i, kj = -i
+    ki = j, ik = -j
+
+    x dim is i
+    y dim is j
+    z dim is k
+    */
+    unimplemented!()
+  }
 }
 
 impl<Num: Sqrt + Clone,> Vector<Num,> {
   /// Converts this Vector into a unit Vector.
   #[inline]
-  pub fn unit(self,) -> Self { self.clone() / self.magnituid() }
+  pub fn unit(self,) -> Unit<Num,> { self.into() }
   /// Returns the magnituid of this Vector.
   #[inline]
   pub fn magnituid(self,) -> Num { Self::dot(self.clone(), self,).sqrt() }
@@ -129,6 +149,29 @@ impl<Num: Number,> ops::Mul for Vector<Num,> {
   fn mul(self, rhs: Self,) -> Self::Output {
     (self.x * rhs.x) + (self.y * rhs.y) + (self.z * rhs.z)
   }
+}
+
+/// A [Vector] with a length of 1 at all times.
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash,)]
+pub struct Unit<Num: Number>(Vector<Num,>,);
+
+impl<Num: Sqrt + Clone,> From<Vector<Num,>> for Unit<Num,> {
+  #[inline]
+  fn from(from: Vector<Num,>,) -> Self { Unit(from.clone() / from.magnituid(),) }
+}
+
+impl<Num: Sqrt + Clone,> Into<Vector<Num,>> for Unit<Num,> {
+  #[inline]
+  fn into(self,) -> Vector<Num,> { self.0 }
+}
+
+/// A rotation in 3D space.
+#[derive(Clone, Copy, Debug,)]
+pub struct Rotation<Num: Number> {
+  /// The axis around which the rotation occours.
+  pub axis: Unit<Num,>,
+  /// The angle of the rotation.
+  pub angle: f32,
 }
 
 #[cfg(test,)]

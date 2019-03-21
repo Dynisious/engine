@@ -33,12 +33,22 @@ impl<Shift: Unsigned,> From<i64,> for Fixed64<Shift,> {
   fn from(from: i64,) -> Self { Fixed64(from * Self::I64SHIFT, PhantomData,) }
 }
 
+impl<Shift: Unsigned,> Into<i64,> for Fixed64<Shift,> {
+  #[inline]
+  fn into(self,) -> i64 { self.to_i64() }
+}
+
 impl<Shift: Unsigned,> From<f64,> for Fixed64<Shift,> {
   #[inline]
   fn from(from: f64,) -> Self { Fixed64(
     (from * Self::F32SHIFT).round() as i64,
     PhantomData,
   ) }
+}
+
+impl<Shift: Unsigned,> Into<f64,> for Fixed64<Shift,> {
+  #[inline]
+  fn into(self,) -> f64 { self.to_f64() }
 }
 
 impl<Shift: Unsigned,> Clone for Fixed64<Shift,> {
