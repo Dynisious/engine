@@ -2,18 +2,18 @@
 //! Last Moddified --- 2019-03-21
 
 use crate::transform::{Position, Orientation,};
-use vector::{Number, Vector,};
+use vector::{Vector, Sqrt, Trigonometry,};
 
 /// A line in space.
 #[derive(PartialEq, Eq, Clone, Copy, Hash,)]
-pub struct Line<Num: Number,> {
+pub struct Line<Num,> {
   /// The origin point of the Line.
   pub location: Vector<Num,>,
   /// The direction of the Line.
   pub direction: Vector<Num,>,
 }
 
-impl<Num: Number + Clone,> Position for Line<Num,> {
+impl<Num: Clone,> Position for Line<Num,> {
   type Pos = Vector<Num,>;
 
   #[inline]
@@ -24,7 +24,8 @@ impl<Num: Number + Clone,> Position for Line<Num,> {
   }
 }
 
-impl<Num: Number + Clone,> Orientation<Num,> for Line<Num,> {
+impl<Num,> Orientation<Num,> for Line<Num,>
+  where Num: Sqrt + Trigonometry + Clone, {
   #[inline]
   fn direction(&self,) -> Vector<Num,> { self.direction.clone() }
   #[inline]

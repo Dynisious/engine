@@ -3,7 +3,7 @@
 //! Author --- daniel.bechaz@gmail.com  
 //! Last Moddified --- 2019-03-21
 
-use vector::{Vector, Unit, Rotation, Number, Sqrt,};
+use vector::{Vector, Unit, Rotation, Sqrt, Trigonometry,};
 use std::ops;
 
 /// A trait for types with a position attribute.
@@ -31,7 +31,7 @@ pub trait Position {
   }
 }
 
-impl<Num: Number + Clone,> Position for Vector<Num,> {
+impl<Num: Clone,> Position for Vector<Num,> {
   type Pos = Self;
 
   #[inline]
@@ -41,7 +41,8 @@ impl<Num: Number + Clone,> Position for Vector<Num,> {
 }
 
 /// A trait for types with an orientation.
-pub trait Orientation<Num: Number + Clone,> {
+pub trait Orientation<Num,>
+  where Num: Sqrt + Trigonometry + Clone, {
   /// Gets the direction this object is facing.
   fn direction(&self,) -> Vector<Num,>;
   /// Sets the direction this object is facing.
@@ -52,22 +53,23 @@ pub trait Orientation<Num: Number + Clone,> {
   /// 
   /// rotation --- The rotation to perform.  
   #[inline]
-  fn rotate(&mut self, rotation: &Rotation,) -> &mut Self {
+  fn rotate(&mut self, rotation: &Rotation<Num,>,) -> &mut Self {
     self.set_direction(Vector::rotate(&self.direction(), rotation,),)
   }
 }
 
 /// Extends [Orientation] behaviour.
-pub trait OrientationExt<Num: Sqrt + Clone,>: Orientation<Num,> {
+pub trait OrientationExt<Num,>: Orientation<Num,>
+  where Num: Sqrt + Trigonometry + Clone, {
   /// Returns the [Unit] of this objects direction.
-  #[inline]
   fn orientation(&self,) -> Unit<Num,> { self.direction().unit() }
 }
 
 impl<Num, T,> OrientationExt<Num,> for T
-  where Num: Sqrt + Clone, T: Orientation<Num,>, {}
+  where T: Orientation<Num,>, Num: Sqrt + Trigonometry + Clone, {}
 
-impl<Num: Number + Clone,> Orientation<Num,> for Vector<Num,> {
+impl<Num: Clone,> Orientation<Num,> for Vector<Num,>
+  where Num: Sqrt + Trigonometry + Clone, {
   #[inline]
   fn direction(&self,) -> Vector<Num,> { self.clone() }
   #[inline]

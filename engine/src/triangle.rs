@@ -2,12 +2,12 @@
 //! Last Moddified --- 2019-03-21
 
 use crate::transform::{Position, Orientation,};
-use vector::{Number, Sqrt, Vector, Rotation,};
+use vector::{Vector, Rotation, Number, Sqrt, Trigonometry,};
 use std::ops;
 
 /// A triangle of three points in space.
 #[derive(PartialEq, Eq, Clone, Copy, Hash,)]
-pub struct Triangle<Num: Number,> {
+pub struct Triangle<Num,> {
   /// The first point.
   pub p1: Vector<Num,>,
   /// The second point.
@@ -16,11 +16,11 @@ pub struct Triangle<Num: Number,> {
   pub p3: Vector<Num,>,
 }
 
-impl<Num: Number + Clone + From<usize>,> Position for Triangle<Num,> {
+impl<Num: Number + Clone,> Position for Triangle<Num,> {
   type Pos = Vector<Num,>;
 
   fn position(&self,) -> Self::Pos {
-    (self.p1.clone() + self.p2.clone() + self.p3.clone()) / 3.into()
+    (self.p1.clone() + self.p2.clone() + self.p3.clone()) / Number::from_isize(3,)
   }
   fn set_position(&mut self, pos: Self::Pos,) -> &mut Self {
     self.translate(pos - self.position(),)
@@ -35,7 +35,8 @@ impl<Num: Number + Clone + From<usize>,> Position for Triangle<Num,> {
   }
 }
 
-impl<Num: Sqrt + Clone + Into<f32>,> Orientation<Num,> for Triangle<Num,> {
+impl<Num,> Orientation<Num,> for Triangle<Num,>
+  where Num: Sqrt + Trigonometry + Clone, {
   fn direction(&self,) -> Vector<Num,> {
     let v1 = self.p2.clone() - self.p1.clone();
     let v2 = self.p3.clone() - self.p1.clone();
@@ -45,7 +46,7 @@ impl<Num: Sqrt + Clone + Into<f32>,> Orientation<Num,> for Triangle<Num,> {
   fn set_direction(&mut self, direction: Vector<Num,>,) -> &mut Self {
     self.rotate(&Rotation::between(self.direction(), direction,),)
   }
-  fn rotate(&mut self, rotation: &Rotation,) -> &mut Self {
+  fn rotate(&mut self, rotation: &Rotation<Num,>,) -> &mut Self {
     self.p1.rotate(rotation,);
     self.p2.rotate(rotation,);
     self.p3.rotate(rotation,);
